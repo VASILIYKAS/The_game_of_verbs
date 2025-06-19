@@ -64,7 +64,7 @@ def main():
         )
     )
 
-    print("Бот успешно запущен!")
+    print("ТГ бот успешно запущен!")
 
     updater.start_polling()
     updater.idle()
