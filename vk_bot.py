@@ -19,6 +19,8 @@ def detect_intent_texts(user_id, texts):
     response = session_client.detect_intent(
         request={"session": session, "query_input": query_input}
     )
+    if response.query_result.intent.is_fallback:
+        return None
 
     return response.query_result.fulfillment_text
 
@@ -33,7 +35,8 @@ def send_message(vk_api, user_id, text):
 
 def handle_message(event, vk_api):
     dialogflow_response = detect_intent_texts(event.user_id, event.text)
-    send_message(vk_api, event.user_id, dialogflow_response)
+    if dialogflow_response is not None:
+        send_message(vk_api, event.user_id, dialogflow_response)
 
 
 if __name__ == "__main__":
