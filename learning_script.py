@@ -28,7 +28,7 @@ def create_intent(project_id):
         )
 
         response = intents_client.create_intent(
-            request={'parent': parent, 'intent': intent}
+            request={'parent': parent, 'intent': intent, 'language_code': 'ru'}
         )
         print(f'Интент "{intent_name}" успешно создан!')
 
