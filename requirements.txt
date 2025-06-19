@@ -3,3 +3,4 @@ python-dotenv==1.1.0
 google
 google-cloud-dialogflow==2.41.2
 urllib3==1.26.16
+vk_api
