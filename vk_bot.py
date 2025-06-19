@@ -13,7 +13,7 @@ logger = setup_logger('Telegram bot')
 
 def detect_intent_texts(user_id, texts):
     try:
-        project_id = 'the-game-of-verbs-iefy'
+        project_id = os.getenv('PROJECT_ID')
         language_code = 'ru-RU'
 
         session_client = dialogflow.SessionsClient()
