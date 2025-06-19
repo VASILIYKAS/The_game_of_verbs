@@ -1,6 +1,7 @@
 import os
 
 from textwrap import dedent
+from logger import setup_logger
 
 from dotenv import load_dotenv
 from telegram.ext import (
@@ -15,21 +16,32 @@ from telegram import Update
 from google.cloud import dialogflow
 
 
+logger = setup_logger('Telegram bot')
+
+
 def detect_intent_texts(user_id, texts):
-    project_id = 'the-game-of-verbs-iefy'
-    language_code = 'ru-RU'
+    try:
+        project_id = 'the-game-of-verbs-iefy'
+        language_code = 'ru-RU'
 
-    session_client = dialogflow.SessionsClient()
-    session = session_client.session_path(project_id, user_id)
+        session_client = dialogflow.SessionsClient()
+        session = session_client.session_path(project_id, user_id)
 
-    text_input = dialogflow.TextInput(text=texts, language_code=language_code)
-    query_input = dialogflow.QueryInput(text=text_input)
+        text_input = dialogflow.TextInput(text=texts, language_code=language_code)
+        query_input = dialogflow.QueryInput(text=text_input)
 
-    response = session_client.detect_intent(
-        request={"session": session, "query_input": query_input}
-    )
+        response = session_client.detect_intent(
+            request={"session": session, "query_input": query_input}
+        )
 
-    return response.query_result.fulfillment_text
+        return response.query_result.fulfillment_text
+
+    except Exception as e:
+        logger.error(
+            f"TG bot: "
+            f"Dialogflow error: {str(e)} | User: {user_id} | Text: '{text}'"
+        )
+        return "Произошла ошибка при обработке запроса"
 
 
 def start(update: Update, context: CallbackContext) -> None:
@@ -37,37 +49,50 @@ def start(update: Update, context: CallbackContext) -> None:
 
 
 def handle_message(update: Update, context: CallbackContext):
-    user_id = update.message.from_user.id
-    user_text = update.message.text
+    try:
+        user_id = update.message.from_user.id
+        user_text = update.message.text
 
-    bot_response = detect_intent_texts(user_id, user_text)
-    update.message.reply_text(bot_response)
+        bot_response = detect_intent_texts(user_id, user_text)
+        update.message.reply_text(bot_response)
+
+    except Exception as e:
+        logger.error(
+            f"TG bot: "
+            f"Message handling failed: {str(e)} | User: {user_id}"
+        )
+        update.message.reply_text("Произошла ошибка")
 
 
 def main():
-    load_dotenv()
+    try:
+        load_dotenv()
 
-    token = os.environ['TG_BOT_TOKEN']
-    if not token:
-        dedent("""
-            Ошибка: Не указан TG_BOT_TOKEN.
-            Убедитесь, что он задан в переменных окружения.
-        """)
+        token = os.environ['TG_BOT_TOKEN']
+        if not token:
+            dedent("""
+                Ошибка: Не указан TG_BOT_TOKEN.
+                Убедитесь, что он задан в переменных окружения.
+            """)
 
-    updater = Updater(token)
-    dispatcher = updater.dispatcher
+        updater = Updater(token)
+        dispatcher = updater.dispatcher
 
-    dispatcher.add_handler(CommandHandler('start', start))
-    dispatcher.add_handler(MessageHandler(
-        Filters.text & ~Filters.command,
-        handle_message
+        dispatcher.add_handler(CommandHandler('start', start))
+        dispatcher.add_handler(MessageHandler(
+            Filters.text & ~Filters.command,
+            handle_message
+            )
         )
-    )
 
-    print("ТГ бот успешно запущен!")
+        logger.info("Телеграмм бот успешно запущен!")
 
-    updater.start_polling()
-    updater.idle()
+        updater.start_polling()
+        updater.idle()
+
+    except Exception as e:
+        logger.critical(e, exc_info=True)
+        raise
 
 
 if __name__ == '__main__':
