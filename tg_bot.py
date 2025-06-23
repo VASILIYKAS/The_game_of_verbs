@@ -39,7 +39,7 @@ def detect_intent_texts(user_id, texts):
     except Exception as e:
         logger.error(
             f"TG bot: "
-            f"Dialogflow error: {str(e)} | User: {user_id} | Text: '{text}'"
+            f"Dialogflow error: {str(e)} | User: {user_id} | Text: '{texts}'"
         )
         return "Произошла ошибка при обработке запроса"
 
