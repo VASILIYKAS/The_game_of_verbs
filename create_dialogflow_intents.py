@@ -1,8 +1,10 @@
 import json
+import os
 from google.cloud import dialogflow
 
 
-def create_intent(project_id):
+def create_intent():
+    project_id = os.getenv('PROJECT_ID')
     with open('questions.json', 'r', encoding='utf-8') as my_file:
         question_json = json.load(my_file)
 
@@ -34,6 +36,4 @@ def create_intent(project_id):
 
 
 if __name__ == "__main__":
-    create_intent(
-        project_id='the-game-of-verbs-iefy'
-    )
+    create_intent()
