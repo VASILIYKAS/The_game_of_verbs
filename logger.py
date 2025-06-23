@@ -31,10 +31,14 @@ class LogHandler(logging.Handler):
 
 
 def create_file_handler():
-    os.makedirs('logs', exist_ok=True)
+    logs_dir = os.getenv('LOGS_DIR', 'logs')
+    log_file = os.getenv('LOG_FILE', 'bot.log')
+    log_path = os.path.join(logs_dir, log_file)
+
+    os.makedirs(logs_dir, exist_ok=True)
 
     file_handler = RotatingFileHandler(
-        'logs/bot.log',
+        filename=log_path,
         maxBytes=1024*1024,
         backupCount=3,
         encoding='utf-8'
