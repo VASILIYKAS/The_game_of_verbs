@@ -1,5 +1,7 @@
 import os
+import functools
 
+from dialogflow_intent import detect_intent_texts
 from textwrap import dedent
 from logger import setup_logger
 
@@ -13,51 +15,29 @@ from telegram.ext import (
 )
 from telegram import Update
 
-from google.cloud import dialogflow
-
 
 logger = setup_logger('Telegram bot')
-
-
-def detect_intent_texts(user_id, texts):
-    try:
-        project_id = os.getenv('PROJECT_ID')
-        language_code = 'ru-RU'
-
-        session_client = dialogflow.SessionsClient()
-        session = session_client.session_path(project_id, user_id)
-
-        text_input = dialogflow.TextInput(text=texts, language_code=language_code)
-        query_input = dialogflow.QueryInput(text=text_input)
-
-        response = session_client.detect_intent(
-            request={"session": session, "query_input": query_input}
-        )
-
-        return response.query_result.fulfillment_text
-
-    except Exception as e:
-        logger.error(
-            f"TG bot: "
-            f"Dialogflow error: {str(e)} | User: {user_id} | Text: '{texts}'"
-        )
-        return "Произошла ошибка при обработке запроса"
 
 
 def start(update: Update, context: CallbackContext) -> None:
     update.message.reply_text('Привет! Я бот с интеграцией Dialogflow. Напиши мне что-нибудь.')
 
 
-def handle_message(update: Update, context: CallbackContext):
+def handle_message(update: Update, context: CallbackContext, project_id):
     try:
         user_id = update.message.from_user.id
         user_text = update.message.text
 
-        bot_response = detect_intent_texts(user_id, user_text)
+        bot_response = detect_intent_texts(
+            project_id=project_id,
+            user_id=user_id,
+            texts=user_text,
+            platform='TG'
+        )
         update.message.reply_text(bot_response)
 
-    except Exception as e:
-        logger.error(
+    except Exception:
+        logger.exception(
             f"TG bot: "
             f"Message handling failed: {str(e)} | User: {user_id}"
         )
@@ -68,6 +48,7 @@ def main():
     try:
         load_dotenv()
 
+        project_id = os.getenv('PROJECT_ID')
         token = os.environ['TG_BOT_TOKEN']
         if not token:
             dedent("""
@@ -78,10 +59,12 @@ def main():
         updater = Updater(token)
         dispatcher = updater.dispatcher
 
+        wrapped_argument = functools.partial(handle_message, project_id=project_id)
+
         dispatcher.add_handler(CommandHandler('start', start))
         dispatcher.add_handler(MessageHandler(
             Filters.text & ~Filters.command,
-            handle_message
+            wrapped_argument
             )
         )
 

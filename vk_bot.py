@@ -5,38 +5,9 @@ from textwrap import dedent
 from logger import setup_logger
 from vk_api.longpoll import VkLongPoll, VkEventType
 from dotenv import load_dotenv
-from google.cloud import dialogflow
-
+from dialogflow_intent import detect_intent_texts
 
 logger = setup_logger('Telegram bot')
-
-
-def detect_intent_texts(user_id, texts):
-    try:
-        project_id = os.getenv('PROJECT_ID')
-        language_code = 'ru-RU'
-
-        session_client = dialogflow.SessionsClient()
-        session = session_client.session_path(project_id, user_id)
-
-        text_input = dialogflow.TextInput(
-            text=texts, language_code=language_code)
-        query_input = dialogflow.QueryInput(text=text_input)
-
-        response = session_client.detect_intent(
-            request={"session": session, "query_input": query_input}
-        )
-        if response.query_result.intent.is_fallback:
-            return None
-
-        return response.query_result.fulfillment_text
-
-    except Exception as e:
-        logger.error(
-            f"VK bot: "
-            f"Dialogflow error: {str(e)} | User: {user_id} | Text: '{text}'"
-        )
-        return "Произошла ошибка при обработке запроса"
 
 
 def send_message(vk_api, user_id, text):
@@ -47,19 +18,26 @@ def send_message(vk_api, user_id, text):
             random_id=random.randint(1, 10000)
         )
 
-    except Exception as e:
-        logger.error(
-            f"В VK боте произошла ошибка при отправке сообщения: {str(e)} | User: {user_id} | Text: '{text}'")
+    except Exception:
+        logger.exception(
+            f"В VK боте произошла ошибка при отправке сообщения: {str(e)} | User: {user_id} | Text: '{text}'"
+        )
 
 
-def handle_message(event, vk_api):
+def handle_message(event, vk_api, project_id):
     try:
-        dialogflow_response = detect_intent_texts(event.user_id, event.text)
+        dialogflow_response = detect_intent_texts(
+            project_id=project_id,
+            user_id=event.user_id,
+            texts=event.text,
+            platform='VK'
+        )
+
         if dialogflow_response is not None:
             send_message(vk_api, event.user_id, dialogflow_response)
 
-    except Exception as e:
-        logger.error(
+    except Exception:
+        logger.exception(
             f"VK bot: "
             f"Message handling failed: {str(e)}"
         )
@@ -69,6 +47,7 @@ def main():
     try:
         load_dotenv()
 
+        project_id = os.getenv('PROJECT_ID')
         vk_token = os.environ['VK_TOKEN']
         if not vk_token:
             dedent("""
@@ -84,7 +63,7 @@ def main():
 
         for event in longpoll.listen():
             if event.type == VkEventType.MESSAGE_NEW and event.to_me:
-                handle_message(event, vk_api)
+                handle_message(event, vk_api, project_id)
 
     except Exception as e:
         logger.critical(e, exc_info=True)
