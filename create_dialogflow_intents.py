@@ -5,8 +5,8 @@ from google.cloud import dialogflow
 
 def create_intent():
     project_id = os.getenv('PROJECT_ID')
-    with open('questions.json', 'r', encoding='utf-8') as my_file:
-        question_json = json.load(my_file)
+    with open('questions.json', 'r', encoding='utf-8') as json_file:
+        question_json = json.load(json_file)
 
     intents_client = dialogflow.IntentsClient()
     parent = dialogflow.AgentsClient.agent_path(project_id)
