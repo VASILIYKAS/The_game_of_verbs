@@ -11,6 +11,8 @@ def create_intent():
     intents_client = dialogflow.IntentsClient()
     parent = dialogflow.AgentsClient.agent_path(project_id)
 
+    created_intents = []
+
     for intent_name, intent_data in question_json.items():
         training_phrases = []
 
@@ -32,8 +34,12 @@ def create_intent():
         response = intents_client.create_intent(
             request={'parent': parent, 'intent': intent, 'language_code': 'ru'}
         )
-        print(f'Интент "{intent_name}" успешно создан!')
+        created_intents.append(intent_name)
+
+        return created_intents
 
 
 if __name__ == "__main__":
-    create_intent()
+    intents = create_intent()
+    for intent in intents:
+        print(f'Интент "{intent}" успешно создан!')
