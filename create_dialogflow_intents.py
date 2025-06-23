@@ -1,6 +1,10 @@
 import json
 import os
+from dotenv import load_dotenv
 from google.cloud import dialogflow
+
+
+load_dotenv()
 
 
 def create_intent():
