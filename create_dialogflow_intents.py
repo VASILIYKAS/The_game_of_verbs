@@ -4,11 +4,8 @@ from dotenv import load_dotenv
 from google.cloud import dialogflow
 
 
-load_dotenv()
+def create_intent(project_id):
 
-
-def create_intent():
-    project_id = os.getenv('PROJECT_ID')
     with open('questions.json', 'r', encoding='utf-8') as json_file:
         question_json = json.load(json_file)
 
@@ -44,6 +41,10 @@ def create_intent():
 
 
 if __name__ == "__main__":
-    intents = create_intent()
+    load_dotenv()
+
+    project_id = os.getenv('PROJECT_ID')
+
+    intents = create_intent(project_id)
     for intent in intents:
         print(f'Интент "{intent}" успешно создан!')
