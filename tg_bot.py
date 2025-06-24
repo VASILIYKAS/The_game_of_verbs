@@ -16,9 +16,6 @@ from telegram.ext import (
 from telegram import Update
 
 
-logger = setup_logger('Telegram bot')
-
-
 def start(update: Update, context: CallbackContext) -> None:
     update.message.reply_text('Привет! Я бот с интеграцией Dialogflow. Напиши мне что-нибудь.')
 
@@ -47,6 +44,12 @@ def handle_message(update: Update, context: CallbackContext, project_id):
 def main():
     try:
         load_dotenv()
+
+        logs_dir = os.getenv('LOGS_DIR', 'logs')
+        log_file = os.getenv('LOG_FILE', 'bot.log')
+
+        global logger
+        logger = setup_logger('Telegram bot', logs_dir, log_file)
 
         project_id = os.getenv('PROJECT_ID')
         token = os.environ['TG_BOT_TOKEN']

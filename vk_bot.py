@@ -7,8 +7,6 @@ from vk_api.longpoll import VkLongPoll, VkEventType
 from dotenv import load_dotenv
 from dialogflow_intent import detect_intent_texts
 
-logger = setup_logger('Telegram bot')
-
 
 def send_message(vk_api, user_id, text):
     try:
@@ -46,6 +44,12 @@ def handle_message(event, vk_api, project_id):
 def main():
     try:
         load_dotenv()
+
+        logs_dir = os.getenv('LOGS_DIR', 'logs')
+        log_file = os.getenv('LOG_FILE', 'bot.log')
+
+        global logger
+        logger = setup_logger('VK bot', logs_dir, log_file)
 
         project_id = os.getenv('PROJECT_ID')
         vk_token = os.environ['VK_TOKEN']
