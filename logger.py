@@ -4,13 +4,24 @@ import traceback
 from logging.handlers import RotatingFileHandler
 from telegram import Bot
 from dotenv import load_dotenv
+from textwrap import dedent
 
 
 class LogHandler(logging.Handler):
 
     def __init__(self):
         super().__init__()
-        self.bot = Bot(token=os.environ['SEND_LOG_BOT_TOKEN'])
+
+        load_dotenv()
+
+        token = os.environ['SEND_LOG_BOT_TOKEN']
+        if not token:
+            dedent("""
+                Ошибка: Не указан SEND_LOG_BOT_TOKEN.
+                Убедитесь, что он задан в переменных окружения.
+            """)
+
+        self.bot = Bot(token=token)
         self.chat_id = os.getenv('chat_id')
 
     def emit(self, record):
@@ -66,7 +77,3 @@ def setup_logger(name, logs_dir, log_file):
     logger.addHandler(telegram_handler)
 
     return logger
-
-
-if __name__ == '__main__':
-    load_dotenv()
