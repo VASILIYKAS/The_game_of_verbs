@@ -10,7 +10,7 @@ def detect_intent_texts(project_id, user_id, texts, language_code='ru-RU', platf
         session_user_id = f"{platform}_{user_id}"
         session_client = dialogflow.SessionsClient()
         session = session_client.session_path(project_id, session_user_id)
-
+        0/0
         text_input = dialogflow.TextInput(text=texts, language_code=language_code)
         query_input = dialogflow.QueryInput(text=text_input)
 
@@ -25,6 +25,6 @@ def detect_intent_texts(project_id, user_id, texts, language_code='ru-RU', platf
 
     except Exception:
         logger.exception(
-            f"{platform} bot: Dialogflow error: {str(e)} | User: {user_id} | Text: '{texts}'"
+            f"{platform} bot: Dialogflow error: User: {user_id} | Text: '{texts}'"
         )
         return "Произошла ошибка при обработке запроса"

@@ -35,8 +35,8 @@ def handle_message(update: Update, context: CallbackContext, project_id):
 
     except Exception:
         logger.exception(
-            f"TG bot: "
-            f"Message handling failed: {str(e)} | User: {user_id}"
+            f'TG bot: '
+            f'Message handling failed: User: {user_id} | Text: "{user_text}"'
         )
         update.message.reply_text("Произошла ошибка")
 

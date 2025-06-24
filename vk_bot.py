@@ -18,7 +18,7 @@ def send_message(vk_api, user_id, text):
 
     except Exception:
         logger.exception(
-            f"В VK боте произошла ошибка при отправке сообщения: {str(e)} | User: {user_id} | Text: '{text}'"
+            f'В VK боте произошла ошибка при отправке сообщения: User: {user_id} | Text: "{text}"'
         )
 
 
@@ -36,8 +36,8 @@ def handle_message(event, vk_api, project_id):
 
     except Exception:
         logger.exception(
-            f"VK bot: "
-            f"Message handling failed: {str(e)}"
+            f'VK bot: '
+            f'Message handling failed'
         )
 
 
