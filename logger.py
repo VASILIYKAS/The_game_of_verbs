@@ -30,26 +30,29 @@ class LogHandler(logging.Handler):
             print(f"Ошибка при отправке лога: {e}")
 
 
-def create_file_handler(logs_dir, log_file):
-    log_path = os.path.join(logs_dir, log_file)
-
+def create_logs_dir(logs_dir):
     os.makedirs(logs_dir, exist_ok=True)
 
-    file_handler = RotatingFileHandler(
+
+def create_log_file(logs_dir, log_file):
+    log_path = os.path.join(logs_dir, log_file)
+
+    log_file = RotatingFileHandler(
         filename=log_path,
         maxBytes=1024*1024,
         backupCount=3,
         encoding='utf-8'
     )
 
-    return file_handler
+    return log_file
 
 
 def setup_logger(name, logs_dir, log_file):
     logger = logging.getLogger(name)
     logger.setLevel(logging.INFO)
 
-    file_handler = create_file_handler(logs_dir, log_file)
+    create_logs_dir(logs_dir)
+    file_handler = create_log_file(logs_dir, log_file)
 
     file_formatter = logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
